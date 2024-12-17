@@ -1,0 +1,5 @@
+python-docx
+pandas
+PyPDF2
+tiktoken
+openpyxl
