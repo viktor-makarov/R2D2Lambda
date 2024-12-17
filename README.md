@@ -5,7 +5,7 @@
 ```deactivate```
 
 Deploy
-```serverless deploy```
+```serverless deploy --verbose```
 
 Test run
 ```serverless invoke -f numpy --log```
