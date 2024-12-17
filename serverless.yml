@@ -3,6 +3,8 @@ service: R2D2
 provider:
   name: aws
   runtime: python3.10
+  stage: prod
+  region: eu-north-1
  
 functions:
   extractTextFromFile:
