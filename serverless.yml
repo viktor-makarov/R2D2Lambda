@@ -9,6 +9,8 @@ provider:
 functions:
   extractTextFromFile:
     handler: extractTextFromFile.main
+  countToken:
+    handler: countToken.main
 
 plugins:
   - serverless-python-requirements

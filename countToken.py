@@ -104,3 +104,16 @@ def countTokenInTextRouter(event, context):
                 'statusCode': 500,
                 'body': err
             }
+
+def main(event, context):
+    result = countTokenInTextRouter(event,"")
+
+    print("result",result)
+
+event = {
+  "text": "test text from AWS",
+  "model": "gpt-4o"
+}
+
+if __name__ == "__main__":
+    main(event, '')
