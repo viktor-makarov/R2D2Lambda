@@ -1,7 +1,7 @@
 Включить виртуальную среду
 
 ```virtualenv venv```
-```source env/bin/activate```
+```source venv/bin/activate```
 ```deactivate```
 
 Deploy
