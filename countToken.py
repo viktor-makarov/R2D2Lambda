@@ -109,6 +109,7 @@ def main(event, context):
     result = countTokenInTextRouter(event,"")
 
     print("result",result)
+    return result
 
 event = {
   "text": "test text from AWS",
