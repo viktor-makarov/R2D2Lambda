@@ -2,9 +2,35 @@ import http.client
 import urllib.parse
 from io import BytesIO
 from docx import Document
+import os
+import json
 import pandas as pd
 import PyPDF2
+from google.api_core.client_options import ClientOptions
+from google.cloud import documentai  # type: ignore
+from google.auth import default
+from google.oauth2 import service_account
 
+def extracttext(docx_stream):
+    doc = Document(docx_stream)
+    fullText = []
+
+    for block in doc.element.body.iterchildren():
+        tag = block.tag
+        if block.tag.endswith('p'):
+            print('Paragraph') 
+            fullText.append(block.text)
+        elif block.tag.endswith('tbl'):
+            # Process the table and convert to a string
+            table_text = []
+            print(dir(block),block.text)
+            for text in block.items():
+                print("text",text)
+
+                table_text.append('\t'+text)  # Using tab as delimiter
+            fullText.append('\n'.join(table_text))
+
+    return '\n'.join(fullText)
 
 def download_file(url):
     # Parse the URL to extract components
@@ -25,10 +51,6 @@ def download_file(url):
 def extracttextfromtxt(txt_stream):
     return txt_stream.read().decode('utf-8')
 
-def extracttextfromdocx(docx_stream):
-    doc = Document(docx_stream)
-    return "\n".join([paragraph.text for paragraph in doc.paragraphs])
-
 def extracttextfromxlsx(xlsx_stream):
     df = pd.read_excel(xlsx_stream)
     dftext = df.to_string(index=False)
@@ -47,7 +69,12 @@ def extracttextfromtxt(filestream):
     return filestream.read().decode('utf-8')
 
 def extracttextfromdocx(docx_stream):
+
+    #result = extracttext(docx_stream)
+    #print("print",result)
+
     doc = Document(docx_stream)
+    
     fullText = []
     for para in doc.paragraphs:
         fullText.append(para.text)
@@ -56,10 +83,31 @@ def extracttextfromdocx(docx_stream):
     doc = Document(docx_stream)
     return "\n".join([paragraph.text for paragraph in doc.paragraphs])
 
-def ocrPDF(filestream):
-    return "OCR yе реализован"    
+def ocrDoc(filestream,mime_type,project_id,location,processor_id):
+    
+    serviceaccountinfo = json.loads(os.environ['GCP_SERVICE_ACCOUNT_KEY'])
 
-def extracttextfromfile(filestream, mime_type):
+    credentials = service_account.Credentials.from_service_account_info(
+        serviceaccountinfo
+    )
+    
+    opts = ClientOptions(api_endpoint=f"{location}-documentai.googleapis.com")
+    client = documentai.DocumentProcessorServiceClient(client_options=opts,credentials=credentials)
+    parent = client.common_location_path(project_id, location)
+    
+    raw_document = documentai.RawDocument(
+        content=filestream.getvalue(),
+        mime_type=mime_type,  # Refer to https://cloud.google.com/document-ai/docs/file-types for supported file types
+    )
+
+    name = f"projects/{project_id}/locations/{location}/processors/{processor_id}"
+    request = documentai.ProcessRequest(name=name, raw_document=raw_document)
+    result = client.process_document(request=request)
+    document = result.document
+
+    return document.text
+
+def extracttextfromfile(filestream, mime_type,project_id,location,processor_id):
 
     if mime_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
         text = extracttextfromdocx(filestream)
@@ -70,12 +118,10 @@ def extracttextfromfile(filestream, mime_type):
     elif mime_type == 'application/pdf':
         text = extracttextfrompdf(filestream)
         noTextFound = len(text) < 10
-
         if noTextFound:
-            text = ocrPDF(filestream)
-        
+            text = ocrDoc(filestream,mime_type,project_id,location,processor_id)
     elif mime_type == 'image/jpeg':
-        text = ocrImage(filestream)
+        text = ocrDoc(filestream,mime_type,project_id,location,processor_id)
     else:
         raise ValueError("Unsupported file type")
     
@@ -84,6 +130,9 @@ def extracttextfromfile(filestream, mime_type):
 def extractTextFromFileRouter(event, context):
   
     url = event["file_url"]
+    project_id = event["project_id"]
+    location = event["location"]
+    processor_id = event["processor_id"]
     
     try:
         filestream = download_file(url)
@@ -95,7 +144,7 @@ def extractTextFromFileRouter(event, context):
     mime_type  = event["file_mime_type"]
 
     try:
-        text = extracttextfromfile(filestream, mime_type)
+        text = extracttextfromfile(filestream, mime_type,project_id,location,processor_id)
     except Exception as e:
         return {
             'statusCode': 500,
@@ -106,8 +155,6 @@ def extractTextFromFileRouter(event, context):
         'statusCode': 200,
         'body': {"text":text,"success":1}
     }
-
-
     	
 def main(event, context):
     result = extractTextFromFileRouter(event,"")
@@ -119,11 +166,18 @@ def main(event, context):
 
 #event = {"file_url": "https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/5248593849_1866.txt", "file_mime_type": "text/plain"}
 
-event = {"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/5248593849_30727.xlsx","file_mime_type":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
+#event = {"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test_xlsx.xlsx","file_mime_type":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
 
 #event = {"file_url": "https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/5248593849_1867.json", "file_mime_type": "application/json"}
 
-#event = {"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/5248593849_1875.docx","file_mime_type":"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
+#event = {"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test_doc.docx","file_mime_type":"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
+
+event = {"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test_page.jpg",
+"file_mime_type":"image/jpeg",
+"project_id":"119875969116",
+"location": "eu",
+"processor_id": "61057af8687a0f68"
+}
 
  
 if __name__ == "__main__":

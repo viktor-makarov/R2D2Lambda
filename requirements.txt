@@ -3,3 +3,6 @@ pandas
 PyPDF2
 tiktoken
 openpyxl
+google
+google-api-python-client
+google-cloud-documentai

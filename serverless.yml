@@ -5,6 +5,8 @@ provider:
   runtime: python3.10
   stage: prod
   region: eu-north-1
+  environment:
+    GCP_SERVICE_ACCOUNT_KEY: ${env:GCP_SERVICE_ACCOUNT_KEY}
  
 functions:
   extractTextFromFile:
