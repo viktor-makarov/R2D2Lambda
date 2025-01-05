@@ -1,8 +1,6 @@
 python-docx
-pandas
 PyPDF2
 tiktoken
+regex
 openpyxl
-google
-google-api-python-client
-google-cloud-documentai
+pandas

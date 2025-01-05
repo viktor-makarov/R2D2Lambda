@@ -108,7 +108,6 @@ def countTokenInTextRouter(event, context):
 def main(event, context):
     result = countTokenInTextRouter(event,"")
 
-    print("result",result)
     return result
 
 event = {
@@ -117,4 +116,5 @@ event = {
 }
 
 if __name__ == "__main__":
-    main(event, '')
+    result = main(event, '')
+    print(result)
