@@ -2,10 +2,11 @@ import http.client
 import urllib.parse
 from io import BytesIO
 from docx import Document
+from docx.oxml.ns import qn
 import os
 import json
 
-def extracttext(docx_stream):
+def extracttext_old(docx_stream):
     doc = Document(docx_stream)
     fullText = []
 
@@ -22,6 +23,45 @@ def extracttext(docx_stream):
                 print("text",text)
 
                 table_text.append('\t'+text)  # Using tab as delimiter
+            fullText.append('\n'.join(table_text))
+
+    return '\n'.join(fullText)
+
+def extracttext(docx_stream):
+    doc = Document(docx_stream)
+    fullText = []
+
+    for block in doc.element.body.iterchildren():
+        tag = block.tag
+        if block.tag.endswith('p'):
+            print('Paragraph') 
+            # Handle paragraphs
+            paragraph_text = []
+            for run in block.iter(qn('w:r')):
+                text_elements = run.findall(qn('w:t'))
+                for elem in text_elements:
+                    if elem.text:
+                        paragraph_text.append(elem.text)
+
+            fullText.append(''.join(paragraph_text))
+        elif block.tag.endswith('tbl'):
+            # Process the table and convert to a string
+            table_text = []
+            print("Table")
+            for row in block.iter(qn('w:tr')):
+                row_text = []
+                for cell in row.iter(qn('w:tc')):
+                    cell_text = []
+                    for paragraph in cell.iter(qn('w:p')):
+                        para_text = []
+                        for run in paragraph.iter(qn('w:r')):
+                            text_elements = run.findall(qn('w:t'))
+                            for elem in text_elements:
+                                if elem.text:
+                                    para_text.append(elem.text)
+                        cell_text.append(''.join(para_text))
+                    row_text.append(' | '.join(cell_text))
+                table_text.append(' | '.join(row_text))
             fullText.append('\n'.join(table_text))
 
     return '\n'.join(fullText)
@@ -63,7 +103,8 @@ def extracttextfromdocx(docx_stream):
 def extracttextfromfile(filestream, mime_type):
 
     if mime_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-        text = extracttextfromdocx(filestream)
+        #text = extracttextfromdocx(filestream)
+        text = extracttext(filestream)
     elif mime_type.startswith('text/') or mime_type == 'application/json':
         text = extracttextfromtxt(filestream)
     else:
