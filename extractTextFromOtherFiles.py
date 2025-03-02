@@ -6,28 +6,9 @@ from docx.oxml.ns import qn
 import os
 import json
 
-def extracttext_old(docx_stream):
-    doc = Document(docx_stream)
-    fullText = []
-
-    for block in doc.element.body.iterchildren():
-        tag = block.tag
-        if block.tag.endswith('p'):
-            print('Paragraph') 
-            fullText.append(block.text)
-        elif block.tag.endswith('tbl'):
-            # Process the table and convert to a string
-            table_text = []
-            print(dir(block),block.text)
-            for text in block.items():
-                print("text",text)
-
-                table_text.append('\t'+text)  # Using tab as delimiter
-            fullText.append('\n'.join(table_text))
-
-    return '\n'.join(fullText)
 
 def extracttext(docx_stream):
+
     doc = Document(docx_stream)
     fullText = []
 
@@ -64,6 +45,34 @@ def extracttext(docx_stream):
                 table_text.append(' | '.join(row_text))
             fullText.append('\n'.join(table_text))
 
+    return '\n'.join(fullText)
+
+def extracttextDoc(docx_stream):
+    # Initialize Word application
+    docxstream = BytesIO(docx_stream)
+    
+    # Open the .doc file
+    doc = word.Documents.Open(docfilepath)
+    
+    # Extract text from paragraphs
+    fullText = []
+    print('Extracting paragraphs...')
+    for para in doc.Paragraphs:
+        fullText.append(para.Range.Text.strip())
+    
+    # Extract text from tables
+    print('Extracting tables...')
+    for table in doc.Tables:
+        for row in table.Rows:
+            row_text = []
+            for cell in row.Cells:
+                row_text.append(cell.Range.Text.strip())
+            fullText.append(' | '.join(row_text))
+    
+    # Close Word document
+    doc.Close()
+    word.Quit()
+    
     return '\n'.join(fullText)
 
 def download_file(url):
@@ -105,10 +114,13 @@ def extracttextfromfile(filestream, mime_type):
     if mime_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
         #text = extracttextfromdocx(filestream)
         text = extracttext(filestream)
+    elif mime_type == 'application/msword':
+        text = extracttext(filestream)
     elif mime_type.startswith('text/') or mime_type == 'application/json':
         text = extracttextfromtxt(filestream)
+
     else:
-        raise ValueError("Unsupported file type")
+        text = "Unsupported file type"
     return text
 
 def extractTextFromOtherFileRouter(event, context):
@@ -146,11 +158,9 @@ def main(event, context):
 
 #event = {"file_url": "https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test_text.json", "file_mime_type": "application/json"}
 
-event = {
-"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test_doc.docx",
-"file_mime_type":"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-}
+#event = {"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test_doc.docx","file_mime_type":"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
 
+event = {"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test.doc","file_mime_type":"application/msword"}
  
 if __name__ == "__main__":
     result = main(event, '')
