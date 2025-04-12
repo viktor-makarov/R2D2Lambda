@@ -73,3 +73,4 @@ pip-delete-this-directory.txt
 # Virtual environment
 venv/
 .env/
+.serverless/
