@@ -4,18 +4,33 @@ import time
 import tiktoken
 
 def num_tokens_from_text(text, model="gpt-4o"):
-
     """Return the number of tokens used by a list of message."""
+    encoding_start_time = time.time()
+    errorMsg = None
     try:
-        encoding_start_time = time.time()
         enc = tiktoken.encoding_for_model(model)
-        encoding_end_time = time.time() 
-    except KeyError:
-        enc = tiktoken.get_encoding("o200k_base")    
+    except KeyError as e:
+        # Log the error to console
+        errorMsg = f"Input model '{model}' - {e}"    
+        # Try fallback encodings in order of preference
+        if "gpt-4" in model:
+            enc = tiktoken.encoding_for_model("gpt-4o")
+            errorMsg += f" Using fallback encoding for gpt-4o."
+        elif "gpt-3.5" in model:
+            enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
+            errorMsg += f" Using fallback encoding for gpt-3.5-turbo."
+        else:
+            # Final fallback
+            enc = tiktoken.get_encoding("o200k_base")
+            errorMsg += f" Using o200k_base as final fallback."
+    finally:
+        encoding_end_time = time.time()
 
-    encoding_time = encoding_end_time - encoding_start_time   
+    if errorMsg:
+        print("Error:",errorMsg)
+    encoding_time = round(encoding_end_time - encoding_start_time, 3)
     
-    return len(enc.encode(text)),encoding_time
+    return len(enc.encode(text)), encoding_time, errorMsg
     
 
 def num_tokens_from_message(text, model="gpt-4o"):
@@ -88,10 +103,16 @@ def countTokenInTextRouter(event, context):
             }
         
         try:
-            tokens_count,encoding_time_sec = num_tokens_from_text(text,model)
+            tokens_count, encoding_time_sec, error_msg = num_tokens_from_text(text, model)
+            response = {
+                'tokens_count': tokens_count,
+                'encoding_time_sec': encoding_time_sec
+            }
+            if error_msg:
+                response['warning'] = error_msg
             return {
                 'statusCode': 200,
-                'body': {"tokens_count":tokens_count,"encoding_time_sec":encoding_time_sec}
+                'body': response
             }
         except NotImplementedError:
             return {
@@ -112,7 +133,7 @@ def main(event, context):
 
 event = {
   "text": "test text from AWS",
-  "model": "gpt-4o"
+  "model": "gpt-4.1"
 }
 
 if __name__ == "__main__":

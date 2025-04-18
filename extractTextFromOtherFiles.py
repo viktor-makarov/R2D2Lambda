@@ -3,8 +3,6 @@ import urllib.parse
 from io import BytesIO
 from docx import Document
 from docx.oxml.ns import qn
-import os
-import json
 
 
 def extracttextFromDocx(docx_stream):
@@ -45,6 +43,21 @@ def extracttextFromDocx(docx_stream):
 
     return '\n'.join(fullText)
 
+
+    # Create a Word application object
+    word = win32com.client.Dispatch("Word.Application")
+    # Open the .doc file
+    doc = word.Documents.Open(file_path)
+    
+    # Extract the text
+    text = doc.Content.Text
+    
+    # Close the document and quit Word
+    doc.Close()
+    word.Quit()
+    
+    return text
+
 def download_file(url):
     # Parse the URL to extract components
     url_parts = urllib.parse.urlparse(url)
@@ -64,7 +77,6 @@ def download_file(url):
 def extracttextfromtxt(txt_stream):
     return txt_stream.read().decode('utf-8')
 
-
 def extracttextfromfile(filestream, mime_type):
 
     if mime_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
@@ -73,7 +85,6 @@ def extracttextfromfile(filestream, mime_type):
         text = extracttextFromDocx(filestream)
     elif mime_type.startswith('text/') or mime_type == 'application/json':
         text = extracttextfromtxt(filestream)
-
     else:
         text = "Unsupported file type"
     return text
@@ -113,9 +124,9 @@ def main(event, context):
 
 #event = {"file_url": "https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test_text.json", "file_mime_type": "application/json"}
 
-event = {"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test_doc.docx","file_mime_type":"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
+#event = {"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test_doc.docx","file_mime_type":"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
 
-#event = {"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test.doc","file_mime_type":"application/msword"}
+event = {"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test.doc","file_mime_type":"application/msword"}
  
 if __name__ == "__main__":
     result = main(event, '')
