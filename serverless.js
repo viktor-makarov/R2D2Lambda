@@ -36,6 +36,7 @@ functions:{
   },
   countTokens: {
     handler: "countTokens.main",
+    provisionedConcurrency: 2,     // <- вот эта строка
     timeout: 30,
     name: `R2D2-countTokens`,
     memorySize: 512,
