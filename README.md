@@ -3,7 +3,7 @@
 ## Включение виртуальной среды
 
 ```bash
-virtualenv venv
+virtualenv venv -p python3.12
 source venv/bin/activate
 # Для выхода из виртуальной среды
  deactivate
