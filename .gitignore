@@ -13,6 +13,9 @@ logs/
 .env
 .env.*
 
+# Unittests
+unittests/
+
 # Build output
 dist/
 build/

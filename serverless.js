@@ -5,14 +5,14 @@ service: 'R2D2',
 provider:{
   name: 'aws',
   stage: 'prod',
-  region: 'eu-north-1',
-  runtime: "python3.12"
+  region: 'eu-north-1'
   },
 package: {
     patterns:['!node_modules/**','!venv/**','!my-project**','!package.json','!package-lock.json','README.md']
   },
 functions:{
   extractTextFromOtherFiles:{
+    runtime: "python3.12",
     handler: "extractTextFromOtherFiles.main",
     timeout: 360,
     name: `R2D2-extractTextFromOtherFiles`,
@@ -20,14 +20,15 @@ functions:{
     description: "extracts text from docx and text files."
   },
   extractTextFromPDF:{
+    runtime: "python3.12",
     handler: "extractTextFromPDF.main",
     timeout: 360,
     name: `R2D2-extractTextFromPDF`,
     memorySize: 512,
     description: "extracts text from PDF"
-
   },
   extractTextFromExcelFile:{
+    runtime: "python3.12",
     handler: "extractTextFromExcelFile.main",
     timeout: 360,
     name: `R2D2-extractTextFromExcelFile`,
@@ -35,8 +36,9 @@ functions:{
     description: "extracts text from Excel files"
   },
   countTokens: {
+    runtime: "python3.12",
     handler: "countTokens.main",
-    provisionedConcurrency: 2,     // <- вот эта строка
+   // provisionedConcurrency: 2,     // <- вот эта строка
     timeout: 30,
     name: `R2D2-countTokens`,
     memorySize: 512,
@@ -44,6 +46,7 @@ functions:{
     
   },
   executePythonCode: {
+    runtime: "python3.12",
     handler: "executePythonCode.main",
     timeout: 360,
     name: `R2D2-executePythonCode`,

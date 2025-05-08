@@ -1,11 +1,11 @@
 import http.client
 import urllib.parse
 from io import BytesIO
-from docx import Document
-from docx.oxml.ns import qn
-
 
 def extracttextFromDocx(docx_stream):
+
+    from docx import Document
+    from docx.oxml.ns import qn
 
     doc = Document(docx_stream)
     fullText = []
@@ -43,21 +43,6 @@ def extracttextFromDocx(docx_stream):
 
     return '\n'.join(fullText)
 
-
-    # Create a Word application object
-    word = win32com.client.Dispatch("Word.Application")
-    # Open the .doc file
-    doc = word.Documents.Open(file_path)
-    
-    # Extract the text
-    text = doc.Content.Text
-    
-    # Close the document and quit Word
-    doc.Close()
-    word.Quit()
-    
-    return text
-
 def download_file(url):
     # Parse the URL to extract components
     url_parts = urllib.parse.urlparse(url)
@@ -67,7 +52,7 @@ def download_file(url):
     
     if response.status != 200:
         raise Exception(f"Failed to download file: {url} {response.status} {response.reason}")
-
+    
     binaryObject = BytesIO(response.read())
     binaryObject.name = url_parts.path.split('/')[-1]
     
@@ -90,7 +75,7 @@ def extracttextfromfile(filestream, mime_type):
     return text
 
 def extractTextFromOtherFileRouter(event, context):
-  
+    
     url = event["file_url"]
     
     try:
@@ -107,7 +92,7 @@ def extractTextFromOtherFileRouter(event, context):
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': {"error":e,"success":0}
+            'body': {"error": str(e), "success": 0}
         }
 
     return {
@@ -127,7 +112,7 @@ def main(event, context):
 #event = {"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test_doc.docx","file_mime_type":"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
 
 event = {"file_url":"https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/test.doc","file_mime_type":"application/msword"}
- 
+
 if __name__ == "__main__":
     result = main(event, '')
     print(result)
