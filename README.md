@@ -1,19 +1,36 @@
-Включить виртуальную среду
+# Работа с виртуальной средой и серверлес
 
-```virtualenv venv```
-```source venv/bin/activate```
-```deactivate```
+## Включение виртуальной среды
 
-Deploy
-```serverless deploy --verbose```
+```bash
+virtualenv venv -p python3.12
+source venv/bin/activate
+# Для выхода из виртуальной среды
+ deactivate
+```
 
-Test run
-```serverless invoke -f numpy --log```
+## Развертывание
 
+```bash
+serverless deploy --verbose
+```
+## Откатываем неудачное развертывание
+```bash
+serverless deploy list
+serverless rollback --timestamp <timestamp>
+```
 
-Sources:
+## Тестирование
 
-https://github.com/viktor-makarov/R2D2Lambda/edit/master/README.md
-https://github.com/serverless/serverless
-https://www.serverless.com/framework/docs
+```bash
+serverless invoke -f numpy --log
+```
+
+---
+
+## Источники
+
+- [R2D2Lambda GitHub](https://github.com/viktor-makarov/R2D2Lambda/edit/master/README.md)
+- [Serverless Framework GitHub](https://github.com/serverless/serverless)
+- [Serverless Documentation](https://www.serverless.com/framework/docs)
 
