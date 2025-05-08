@@ -14,6 +14,11 @@ source venv/bin/activate
 ```bash
 serverless deploy --verbose
 ```
+## Откатываем неудачное развертывание
+```bash
+serverless deploy list
+serverless rollback --timestamp <timestamp>
+```
 
 ## Тестирование
 
