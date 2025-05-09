@@ -12,7 +12,12 @@ source venv/bin/activate
 ## Развертывание
 
 ```bash
-serverless deploy --verbose
+# For development
+serverless deploy --stage dev --verbose
+
+# For production
+serverless deploy --stage prod --verbose
+
 ```
 ## Откатываем неудачное развертывание
 ```bash

@@ -1,13 +1,27 @@
 'use strict'
 
+const stages = {
+  dev: {
+    logLevel: 'DEBUG',
+  },
+  prod: {
+    logLevel: 'INFO'
+  }
+}
+
 module.exports = {
 service: 'R2D2',
 provider:{
   name: 'aws',
-  stage: 'prod',
-  region: 'eu-north-1'
+  stage: "${opt:stage, 'dev'}",
+  region: 'eu-north-1',
+  environment: {
+    STAGE: "${opt:stage, 'dev'}",
+    LOG_LEVEL: "${self:custom.currentStage.logLevel}"
+  }
   },
 package: {
+    excludeDevDependencies: false,
     patterns:['!node_modules/**','!venv/**','!my-project**','!package.json','!package-lock.json','README.md']
   },
 functions:{
@@ -15,9 +29,17 @@ functions:{
     runtime: "python3.12",
     handler: "extractTextFromOtherFiles.main",
     timeout: 360,
-    name: `R2D2-extractTextFromOtherFiles`,
+    name: "R2D2-extractTextFromOtherFiles",
     memorySize: 512,
     description: "extracts text from docx and text files."
+  },
+  extractTextWithTika:{
+    runtime: "java17",
+    handler: "com.r2d2.TikaTextExtractor::handleRequest",
+    timeout: 360,
+    name: "R2D2-extractTextWithTika",
+    memorySize: 512,
+    description: "extracts text from various file formats using Apache Tika"
   },
   extractTextFromPDF:{
     runtime: "python3.12",
@@ -58,12 +80,15 @@ functions:{
 plugins:["serverless-python-requirements"],
 
 custom:{
+currentStage: "${self:custom.stages.${self:provider.stage}}",
+stages: stages,
 pythonRequirements:{
   useDownloadCache: false, //not using cache prevents broken dependencies
   useStaticCache: false //not using cache prevents broken dependencies
 }
 }
 }
+
 
 
 
