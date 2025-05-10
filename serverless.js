@@ -22,7 +22,15 @@ provider:{
   },
 package: {
     excludeDevDependencies: false,
-    patterns:['!node_modules/**','!venv/**','!my-project**','!package.json','!package-lock.json','README.md']
+    patterns:[
+      '!node_modules/**',
+      '!venv/**',
+      '!my-project**',
+      '!package.json',
+      '!package-lock.json',
+      'README.md',
+      'target/r2d2-lambda-*.jar'
+    ]
   },
 functions:{
   extractTextFromOtherFiles:{
@@ -31,15 +39,18 @@ functions:{
     timeout: 360,
     name: "R2D2-extractTextFromOtherFiles",
     memorySize: 512,
-    description: "extracts text from docx and text files."
+    description: "Depricatred: extracts text from docx and text files."
   },
-  extractTextWithTika:{
+  extractContentWithTika:{
     runtime: "java17",
-    handler: "com.r2d2.TikaTextExtractor::handleRequest",
+    handler: "com.r2d2.TikaContentExtractor::handleRequest",
     timeout: 360,
-    name: "R2D2-extractTextWithTika",
-    memorySize: 512,
-    description: "extracts text from various file formats using Apache Tika"
+    name: "R2D2-${self:provider.stage}-extractContentWithTika",
+    memorySize: 1024,
+    description: "extracts content (text,html and metadata) from various file formats using Apache Tika",
+    package: {
+      artifact: 'target/r2d2-lambda-1.0-SNAPSHOT.jar'
+    }
   },
   extractTextFromPDF:{
     runtime: "python3.12",
@@ -47,7 +58,7 @@ functions:{
     timeout: 360,
     name: `R2D2-extractTextFromPDF`,
     memorySize: 512,
-    description: "extracts text from PDF"
+    description: "Depricated: extracts text from PDF"
   },
   extractTextFromExcelFile:{
     runtime: "python3.12",
@@ -55,7 +66,7 @@ functions:{
     timeout: 360,
     name: `R2D2-extractTextFromExcelFile`,
     memorySize: 512,
-    description: "extracts text from Excel files"
+    description: "Depricated: extracts text from Excel files"
   },
   countTokens: {
     runtime: "python3.12",
@@ -64,14 +75,31 @@ functions:{
     timeout: 30,
     name: `R2D2-countTokens`,
     memorySize: 512,
-    description: "counts token of incoming text for defined model"
+    description: "Depricated: counts token of incoming text for defined model"
     
+  },
+  countTokensWithTiktoken: {
+    runtime: "python3.12",
+    handler: "countTokens.main",
+   // provisionedConcurrency: 2,     // <- вот эта строка
+    timeout: 30,
+    name: "R2D2-${self:provider.stage}-countTokensWithTiktoken",
+    memorySize: 512,
+    description: "counts token of incoming text for defined model"
   },
   executePythonCode: {
     runtime: "python3.12",
     handler: "executePythonCode.main",
     timeout: 360,
     name: `R2D2-executePythonCode`,
+    memorySize: 512,
+    description: "Depricated: executes Python code"
+  },
+  runPythonCode: {
+    runtime: "python3.12",
+    handler: "executePythonCode.main",
+    timeout: 360,
+    name: "R2D2-${self:provider.stage}-runPythonCode",
     memorySize: 512,
     description: "executes Python code"
   }

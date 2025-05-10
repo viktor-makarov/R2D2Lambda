@@ -9,6 +9,9 @@ logs/
 *.log
 *.log.*
 
+#Java
+target/
+
 # Environment variables
 .env
 .env.*
