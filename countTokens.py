@@ -14,8 +14,11 @@ def num_tokens_from_text(text, model="gpt-4o"):
         errorMsg = f"Input model '{model}' - {e}"    
         # Try fallback encodings in order of preference
         if "gpt-4" in model:
-            enc = tiktoken.encoding_for_model("gpt-4o")
-            errorMsg += f" Using fallback encoding for gpt-4o."
+            enc = tiktoken.get_encoding("o200k_base")
+            errorMsg += f" Using o200k_base as fallback."
+        elif "gpt-5" in model:
+            enc = tiktoken.get_encoding("o200k_base")
+            errorMsg += f" Using o200k_base as fallback."
         elif "gpt-3.5" in model:
             enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
             errorMsg += f" Using fallback encoding for gpt-3.5-turbo."
@@ -133,7 +136,7 @@ def main(event, context):
 
 event = {
   "text": "test text from AWS",
-  "model": "gpt-4.1"
+  "model": "gpt-5.1"
 }
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ logs/
 
 #Java
 target/
-
+target
 # Environment variables
 .env
 .env.*

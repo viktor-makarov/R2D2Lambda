@@ -10,7 +10,7 @@ public class TestTikaExtractor {
         
         // Create input as Map<String, Object> instead of JSON string
         Map<String, Object> input = new HashMap<>();
-        input.put("file_url", "https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/c7ceaa4924c82986be5a73839c3eb260_chat_5ebe5626b9f1cd89fbb9f665a527591f.docx");
+        input.put("file_url", "https://r2d2storagedev.s3.eu-north-1.amazonaws.com/incoming_files/c7ceaa4924c82986be5a73839c3eb260_chat_399fb867d690d0bb82fae38942bc29ae.xlsx");
         
         // Call the handler method with Map input
         Map<String, Object> result = extractor.handleRequest(input, null);
